@@ -1,0 +1,23 @@
+# Use the official Node.js image from the Docker Hub
+FROM node:14-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package.json and yarn.lock/npm's package-lock.json to the working directory
+COPY package.json yarn.lock ./
+
+# Install dependencies
+RUN yarn install
+
+# Copy the entire frontend directory to the working directory
+COPY . .
+
+# Build the React app
+RUN yarn build
+
+# Expose the port that the React app runs on
+EXPOSE 3000
+
+# Command to run the React app
+CMD ["yarn", "start"]
