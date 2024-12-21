@@ -6,29 +6,32 @@ import "react-toastify/dist/ReactToastify.css";
 import Header from "./includes/Header";
 import { Link } from "react-router-dom";
 
+
 function Cart() {
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState([]); // Initialize cart as an empty array
   const axiosInstance = useAxios();
   const [cartTotal, setCartTotal] = useState(0);
   const [tax, setTax] = useState(9);
 
+  // Fetch cart items
   useEffect(() => {
     const fetchCart = async () => {
       try {
         const response = await axiosInstance.get("/api/v1/products/cart/");
-        setCart(response.data.data);
+        setCart(response.data.cart_items || []); // Ensure it sets an array
       } catch (error) {
         console.log(error);
       }
     };
 
     fetchCart();
-  }, []);
+  }, [axiosInstance]);
 
+  // Handle deleting an item from the cart
   const handleDeleteCartItem = (itemId) => {
     axiosInstance
       .post(`http://127.0.0.1:8001/api/v1/products/dele_cart/${itemId}`, {})
-      .then((response) => {
+      .then(() => {
         setCart((prevCart) => prevCart.filter((item) => item.id !== itemId));
         toast.success("Item removed from cart successfully!");
       })
@@ -37,58 +40,74 @@ function Cart() {
       });
   };
 
+  const handlePlaceOrder = async () => {
+    try {
+      const response = await axiosInstance.post("/api/v1/products/place_order/");
+      toast.success("Order placed successfully!");
+      // Clear cart in frontend after placing order
+      setCart([]);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to place order.");
+    }
+  };
+
+  // Calculate cart total
   useEffect(() => {
     const calculateCartTotal = () => {
-      const total = cart.reduce((acc, item) => acc + item.price, 0);
-      setCartTotal(total);
+      if (Array.isArray(cart) && cart.length > 0) {
+        const total = cart.reduce((acc, item) => acc + item.price, 0);
+        setCartTotal(total);
+      } else {
+        setCartTotal(0);
+      }
     };
+
     calculateCartTotal();
   }, [cart]);
 
-  const totalOrder = cart.reduce((acc, item) => acc + item.price, 0) + tax;
+  // Safely calculate total order including tax
+  const totalOrder = (Array.isArray(cart) ? cart.reduce((acc, item) => acc + item.price, 0) : 0) + tax;
+
 
   return (
     <>
       <Header />
       <div
-        class="cart-main-area ptb--100 bg__white"
+        className="cart-main-area ptb--100 bg__white"
         style={{ marginBottom: "40px", marginTop: "-40px" }}
       >
-        <div class="container">
-          <div class="row">
-            <div class="col-md-12 col-sm-12 col-xs-12">
+        <div className="container">
+          <div className="row">
+            <div className="col-md-12 col-sm-12 col-xs-12">
               <form action="#">
-                <div class="table-content table-responsive">
+                <div className="table-content table-responsive">
                   <table>
                     <thead>
                       <tr>
-                        <th class="product-thumbnail">products</th>
-                        <th class="product-name">name of products</th>
-                        <th class="product-price">Price</th>
-                        <th class="product-remove">Remove</th>
+                        <th className="product-thumbnail">Products</th>
+                        <th className="product-name">Name of Products</th>
+                        <th className="product-price">Price</th>
+                        <th className="product-remove">Remove</th>
                       </tr>
                     </thead>
                     <tbody>
                       {cart.map((item) => (
                         <tr key={item.id}>
-                          <td class="product-thumbnail">
+                          <td className="product-thumbnail">
                             <a href="#">
-                              <img src={item.image} style={{width:"50px"}} alt="product img" />
+                              <img src={item.image} style={{ width: "50px" }} alt="product img" />
                             </a>
                           </td>
-                          <td class="product-name">
-                            <a href="#">{item.name}y</a>
-                            <ul class="pro__prize">
-                              <li class="old__prize"></li>
-                              <li></li>
-                            </ul>
+                          <td className="product-name">
+                            <a href="#">{item.name}</a>
                           </td>
-                          <td class="product-price">
-                            <span class="amount">{item.price}</span>
+                          <td className="product-price">
+                            <span className="amount">${item.price.toFixed(2)}</span>
                           </td>
-                          <td class="product-remove">
+                          <td className="product-remove">
                             <Link onClick={() => handleDeleteCartItem(item.id)}>
-                              <i class="fas fa-trash icons"></i>
+                              <i className="fas fa-trash icons"></i>
                             </Link>
                           </td>
                         </tr>
@@ -96,56 +115,58 @@ function Cart() {
                     </tbody>
                   </table>
                 </div>
-                <div class="row">
-                  <div class="col-md-12 col-sm-12 col-xs-12">
-                    <div class="buttons-cart--inner">
-                      <div class="buttons-cart">
+                <div className="row">
+                  <div className="col-md-12 col-sm-12 col-xs-12">
+                    <div className="buttons-cart--inner">
+                      <div className="buttons-cart">
                         <a href="#">Continue Shopping</a>
                       </div>
-                      <div class="buttons-cart checkout--btn">
-                        <a href="#">update</a>
-                        <a href="#">checkout</a>
+                      <div className="buttons-cart checkout--btn">
+                        <a href="#">Update</a>
+                        <a onClick={handlePlaceOrder} className="btn btn-primary">
+  Place Order
+</a>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div class="row">
-                  <div class="col-md-6 col-sm-12 col-xs-12">
-                    <div class="ht__coupon__code">
-                      <span>enter your discount code</span>
-                      <div class="coupon__box">
-                        <input type="text" placeholder="" />
-                        <div class="ht__cp__btn">
-                          <a href="#">enter</a>
+                <div className="row">
+                  <div className="col-md-6 col-sm-12 col-xs-12">
+                    <div className="ht__coupon__code">
+                      <span>Enter Your Discount Code</span>
+                      <div className="coupon__box">
+                        <input type="text" placeholder="Discount Code" />
+                        <div className="ht__cp__btn">
+                          <a href="#">Enter</a>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div class="col-md-6 col-sm-12 col-xs-12 smt-40 xmt-40">
-                    <div class="htc__cart__total">
-                      <h6>cart total</h6>
-                      <div class="cart__desk__list">
-                        <ul class="cart__desc">
-                          <li>cart total</li>
-                          <li>tax</li>
-                          <li>shipping</li>
+                  <div className="col-md-6 col-sm-12 col-xs-12 smt-40 xmt-40">
+                    <div className="htc__cart__total">
+                      <h6>Cart Total</h6>
+                      <div className="cart__desk__list">
+                        <ul className="cart__desc">
+                          <li>Cart Total</li>
+                          <li>Tax</li>
+                          <li>Shipping</li>
                         </ul>
-                        <ul class="cart__price">
+                        <ul className="cart__price">
                           <li>${cartTotal.toFixed(2)}</li>
                           <li>${tax.toFixed(2)}</li>
-                          <li>0</li>
+                          <li>$0</li>
                         </ul>
                       </div>
-                      <div class="cart__total">
-                        <span>order total</span>
-                        <span>${totalOrder.toFixed(2)}</span>{" "}
+                      <div className="cart__total">
+                        <span>Order Total</span>
+                        <span>${totalOrder.toFixed(2)}</span>
                       </div>
-                      <ul class="payment__btn">
-                        <li class="active">
-                          <a href="#">payment</a>
+                      <ul className="payment__btn">
+                        <li className="active">
+                          <a href="#">Payment</a>
                         </li>
                         <li>
-                          <a href="#">continue shopping</a>
+                          <a href="#">Continue Shopping</a>
                         </li>
                       </ul>
                     </div>

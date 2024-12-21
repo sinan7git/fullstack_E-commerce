@@ -8,6 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 function ProductDetail() {
   const { id } = useParams();
   const [detail, setDetail] = useState({});
+  const [cartCount, setCartCount] = useState(0);
   const axiosInstance = useAxios();
 
   useEffect(() => {
@@ -26,10 +27,14 @@ function ProductDetail() {
   
   const handleAddToCart = async (id) => {
     try {
-      await axiosInstance.post(`/api/v1/products/add_cart/${id}`);
+      const response = await axiosInstance.post(`/api/v1/products/add_cart/${id}`);
+      const { cart_count } = response.data; // Get cart count from the response
+  
+      setCartCount(cart_count); // Update cart count in the state
+  
       toast.success('Item added to cart!', {
         position: 'top-right',
-        autoClose: 2000, 
+        autoClose: 2000,
         hideProgressBar: true,
         closeOnClick: true,
         pauseOnHover: true,
@@ -37,6 +42,16 @@ function ProductDetail() {
       });
     } catch (error) {
       console.error(error);
+  
+      // Show error toast message
+      toast.error('Failed to add item to cart!', {
+        position: 'top-right',
+        autoClose: 2000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
   };
 

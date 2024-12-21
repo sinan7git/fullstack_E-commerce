@@ -1,62 +1,82 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Link } from 'react-router-dom';
-import * as PropTypes from "prop-types";
-// ... Styling components (Table, TableRow, etc.)
+import React, { useEffect, useState } from 'react';
+import { Box, Card, CardContent, Typography, CircularProgress, Alert, Grid } from '@mui/material';
+import useAxios from './useAxios'; // Custom Axios hook
+import Header from "./includes/Header";
 
-function TableRow({ order }) {
-  return (
-    <tr>
-      <td>{order.id}</td>
-      {/* Render other order details here */}
-      <td>
-        <Link to={`/admin/orders/${order.id}`}>View Details</Link>
-      </td>
-    </tr>
-  );
-}
-
-TableRow.propTypes = {
-  order: PropTypes.object.isRequired,
-};
-
-
-function OrderList() {
+const MyOrders = () => {
+  const axiosInstance = useAxios(); // Use your custom Axios instance
   const [orders, setOrders] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
-      setIsLoading(true);
       try {
-        const response = await axios.get('http://localhost:8000/api/v1/products/orders/');
-        setOrders(response.data);
-      } catch (error) {
-        console.error('Error fetching orders:', error);
-        // Handle the error appropriately
+        const response = await axiosInstance.get('/api/v1/products/my-orders/');
+        setOrders(response.data.orders || []);
+      } catch (err) {
+        setError('Failed to load orders.');
+        console.error(err);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
     fetchOrders();
-  }, []);
+  }, [axiosInstance]);
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+        <Alert severity="error">{error}</Alert>
+      </Box>
+    );
+  }
 
   return (
-    <div>
-      <h1>Order Management</h1>
-      {isLoading ? (
-        <p>Loading...</p>
+    <>
+    <Header />
+    <Box padding={4}>
+      <Typography variant="h4" gutterBottom>
+        My Orders
+      </Typography>
+      {orders.length === 0 ? (
+        <Alert severity="info">No orders found.</Alert>
       ) : (
-        <table>
-          <tbody>
-            {orders.map((order) => (
-              <TableRow key={order.id} order={order} />
-            ))}
-          </tbody>
-        </table>
+        <Grid container spacing={3}>
+          {orders.map((order) => (
+            <Grid item xs={12} md={6} key={order.id}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6">Order #{order.id}</Typography>
+                  <Typography variant="body1">Date: {new Date(order.created_at).toLocaleDateString()}</Typography>
+                  <Typography variant="body1">Status: {order.status}</Typography>
+                  <Typography variant="body1">Total: ${order.total_price.toFixed(2)}</Typography>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Items:
+                  </Typography>
+                  {order.items.map((item, index) => (
+                    <Typography key={index} variant="body2">
+                      - {item.product_name} x {item.quantity} (${item.price.toFixed(2)})
+                    </Typography>
+                  ))}
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
       )}
-    </div>
+    </Box>
+    </>
   );
-}
-export default OrderList;
+};
+
+export default MyOrders;

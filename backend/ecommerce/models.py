@@ -37,7 +37,7 @@ class Products(models.Model):
     image = models.ImageField(upload_to="media/products/")
     price = models.FloatField()
     old_price = models.FloatField()
-    quantity = models.IntegerField(null=True)
+    stock = models.PositiveIntegerField(default=0)  # New field for stock
     description = models.TextField()
     review = models.TextField()
     category = models.ForeignKey(Category, on_delete=models.CASCADE, null=True)
@@ -53,6 +53,18 @@ class Products(models.Model):
     def __str__(self):
         return self.name
 
+    def is_in_stock(self):
+        return self.stock > 0
+    
+    def decrease_stock(self, amount):
+        if self.stock >= amount:
+            self.stock -= amount
+            self.save()
+        else:
+            raise ValueError("Not enough stock available.")
+
+    
+
 
 class Order(models.Model):
     ORDER_STATUS = (
@@ -65,13 +77,26 @@ class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=ORDER_STATUS, default='Pending')
+    total_price = models.FloatField(default=0.0)
+
+    def __str__(self):
+        return f"Order {self.id} by {self.user.username}"
 
 
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
-    product = models.ForeignKey(Products, on_delete=models.CASCADE)
-    quantity = models.IntegerField()
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
+    product = models.ForeignKey(Products, on_delete=models.CASCADE, related_name='order_items')
+    product_name = models.CharField(max_length=255)
+    quantity = models.PositiveIntegerField(default=1)
+    price = models.FloatField()
+
+    def save(self, *args, **kwargs):
+        if not self.product_name:
+            self.product_name = self.product.name  
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.quantity} x {self.product_name} in Order {self.order.id}"
 
 
 class UserProfile(models.Model):
@@ -83,8 +108,20 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     user_type = models.CharField(max_length=20, choices=USER_TYPE_CHOICES, default='CUSTOMER')
     phone_number = models.CharField(max_length=15, blank=True, null=True)
-    address = models.TextField(blank=True, null=True)
+
+    # Address Fields
+    street_address = models.CharField(max_length=255, blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    postal_code = models.CharField(max_length=20, blank=True, null=True)
+    country = models.CharField(max_length=100, blank=True, null=True)
+
+    cart_items = models.ManyToManyField('Products', blank=True, related_name='cart_users')
+
+    def clear_cart(self):
+        self.cart_items.clear()
 
     def __str__(self):
         return f"{self.user.username} - {self.get_user_type_display()}"
+
 

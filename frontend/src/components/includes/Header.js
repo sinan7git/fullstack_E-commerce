@@ -7,6 +7,7 @@ import img1 from '../images/bg/pngtree-e-commerce-logo-template-png-image_506682
 import { Link, useNavigate } from 'react-router-dom';
 import useRoleAccess from '../useRoleAccess'
 import { UserContext } from '../../App';
+import useAxios from '../useAxios';
 
 function Header() {
   const navigate = useNavigate();
@@ -16,7 +17,8 @@ function Header() {
   const isCustomer = useRoleAccess(['CUSTOMER']);
   const isSeller = useRoleAccess(['SELLER']);
   const isAdmin = useRoleAccess(['ADMIN']);
-
+  const [cartCount, setCartCount] = useState(0);
+  const axiosInstance = useAxios();
 
   useEffect(() => {
     if (userData) {
@@ -39,6 +41,19 @@ function Header() {
   const handleMobileMenuToggle = () => {
     setMobileMenuOpen(!isMobileMenuOpen);
   };
+
+  useEffect(() => {
+    const fetchCartCount = async () => {
+      try {
+        const response = await axiosInstance.get('/api/v1/products/cart/count/');
+        setCartCount(response.data.cart_count); // Update cart count state
+      } catch (error) {
+        console.error('Failed to fetch cart count:', error);
+      }
+    };
+
+    fetchCartCount();
+  }, [axiosInstance]); 
 
   return (
     <header id="htc__header" className="htc__header__area header--one">
@@ -227,9 +242,10 @@ function Header() {
                   )}
                      {isSeller && (
 <>
-             <li> <Link to="/seller/products">My Products</Link></li>
-              <li><Link to="/seller/orders">Orders</Link></li>
-              <li><Link to="/seller/analytics">Analytics</Link></li>
+             <li> <Link to="/seller/add/">Add Products</Link></li>
+             <li> <Link to="/seller/product/list/">My Products</Link></li>
+              <li><Link to="/seller/orders/">Orders</Link></li>
+              <li><Link to="/seller/analytics/">Analytics</Link></li>
 </>
         )}
               {isAdmin && (
@@ -255,8 +271,8 @@ function Header() {
               <div className="col-md-3 col-lg-2 col-sm-4 col-xs-4">
                 <div className="header__right">
                 <div className={`header__search ${isSearchOpen ? "search__open" : ""}`}>
-          <Link to="#">
-            <i className="fas fa-search icons" ></i>
+          <Link to="/profile/update/">
+            <i className="fas fa-user icons" ></i>
           </Link>
           {isSearchOpen && (
             <div className="search__bar"  style={{ width: "700px", height: "40px", backgroundColor: "white" }}>
@@ -275,7 +291,7 @@ function Header() {
                     <i className="fas fa-cart-shopping icons"></i>
                     </Link>
                     <a to="#">
-                      <span className="htc__qua">2</span>
+                      <span className="htc__qua">{cartCount}</span>
                     </a>
                   </div>
             </>

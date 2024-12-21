@@ -40,6 +40,12 @@ import Signup from './components/signup';
 import Login from './components/Login';
 import PrivateRoute from './components/includes/PrivateRoute';
 import OrderList from "./components/OrderList";
+import ProductList from './components/seller/ProductList';
+import AddProduct from './components/seller/AddProducts';
+import SellersOrders from "./components/seller/SellersOrders";
+import SellerAnalytics from "./components/seller/Seller_Analytics";
+import MyOrders from './components/MyOrder';
+import ProfileUpdate from './components/ProfileUpdate';
 
 export const UserContext = React.createContext();
 function App() {
@@ -72,6 +78,7 @@ function App() {
         <Route path="/" element={<Main />} />
         <Route path="/signup/" element={<Signup />} />
         <Route path="/login/" element={<Login />} />
+        <Route path="/profile/update/" element={<ProfileUpdate />} />
 
         <Route path="/area/" element={<Area />} />
         <Route path="/best/" element={<BestSeller />} />
@@ -86,6 +93,7 @@ function App() {
           <Route path="/product/:id/" element={<ProductDetail />} />
           </Route>
         <Route path="/cart/" element={<Cart />} />
+        <Route path="/my-orders/" element={<MyOrders />} />
         
         {/* Items Start */}
         <Route path="/dress/" element={<Dresses />} />
@@ -112,6 +120,12 @@ function App() {
         <Route path="/wallets/" element={<Wallets />} />
         <Route path="/belts/" element={<Belts />} />
         <Route path="/hats/" element={<HatsMen />} />
+
+        {/* Seller */}
+        <Route path="/seller/add/" element={<AddProduct/>} />
+        <Route path="/seller/product/list/" element={<ProductList/>} />
+        <Route path="/seller/orders/" element={<SellersOrders />} />
+        <Route path="/seller/analytics/" element={<SellerAnalytics />} />
       </Routes>
     </Router>
     </UserContext.Provider>

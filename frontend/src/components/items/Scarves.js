@@ -7,7 +7,7 @@ function Sandals() {
 
     const [dress, setDress] = useState([]);
     useEffect(() =>{
-      axios.get(`${BASE_URL}?q=13`).then((response) =>{
+      axios.get(`${BASE_URL}?q=12`).then((response) =>{
             setDress(response.data.data)
         }).catch((err) =>{
             console.log(err)

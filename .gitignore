@@ -1,0 +1,10 @@
+# Python virtual environment
+venv
+
+# Node.js modules
+node_modules/
+
+# Other common exclusions
+*.log
+.DS_Store
+*.env
