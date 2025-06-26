@@ -3,66 +3,61 @@ import React, { useEffect, useState } from 'react'
 import Header from '../includes/Header';
 import  { BASE_URL } from '../includes/Api'
 import { Link } from 'react-router-dom';
+import useAxios from "../useAxios";
 
 function Dresses() {
 
     const [dress, setDress] = useState([]);
-    useEffect(() =>{
-        axios.get(`${BASE_URL}?q=2`).then((response) =>{
-            setDress(response.data.data)
-        }).catch((err) =>{
-            console.log(err)
-        })
-    }, [])
+    const axiosInstance = useAxios();
+    const BASE_IMAGE_URL = "http://localhost:8001";
 
-    const renderItem = () =>{
-        if (!Array.isArray(dress)) {
-            return [];
-          }
-          return dress.map((pro) => (
-            <div key={pro.id} className="col-md-4 col-lg-3 col-sm-4 col-xs-12">
-              <div className="category">
-                <div className="ht__cat__thumb">
-                  <a href="product-details.html">
-                  <Link to={`/product/${pro.id}`}><img
-                src={pro.image}
-                alt="slider images"
-                style={{ width: "100%", height: "300px",  objectFit:'contain'}}
-              /></Link>
-                  </a>
-                </div>
-                <div className="fr__hover__info">
-                  <ul className="product__action">
-                    <li>
-                      <a href="wishlist.html">
-                        <i className="fas fa-heart icons"></i>
-                      </a>
-                    </li>
-                    <li>
-                      <a href="cart.html">
-                        <i className="fas fa-shopping-cart icons"></i>
-                      </a>
-                    </li>
-                    <li>
-                      <a href="#">
-                        <i className="fas fa-shuffle icons"></i>
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-                <div className="fr__product__inner">
-                  <h4>
-                    <a href="product-details.html">{pro.name}</a>
-                  </h4>
-                  <ul className="fr__pro__prize">
-                    <li className="old__prize" style={{textDecoration:"line-through"}}>${pro.old_price}</li>
-                    <li>${pro.price}</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          ));
-    }
+        useEffect(() => {
+          axiosInstance.get(`${BASE_URL}?q=2`)
+            .then((response) => {
+              setDress(response.data.data);
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        }, [axiosInstance]);
+
+
+    const renderItem = () => {
+  if (!Array.isArray(dress)) return [];
+
+  return dress.map((pro) => (
+    <div key={pro.id} className="col-lg-3 col-md-4 col-sm-6 col-12 mb-4">
+      <div className="category">
+        <div className="ht__cat__thumb">
+          <Link to={`/product/${pro.id}`}>
+            <img
+              src={`${BASE_IMAGE_URL}${pro.image}`}
+              alt={pro.name}
+              style={{ width: "100%", height: "300px", objectFit: "contain" }}
+            />
+          </Link>
+        </div>
+        <div className="fr__hover__info">
+          <ul className="product__action">
+            <li><a href="#"><i className="fas fa-heart icons"></i></a></li>
+            <li><a href="#"><i className="fas fa-shopping-cart icons"></i></a></li>
+            <li><a href="#"><i className="fas fa-shuffle icons"></i></a></li>
+          </ul>
+        </div>
+        <div className="fr__product__inner">
+          <h4>{pro.name}</h4>
+          <ul className="fr__pro__prize">
+            <li className="old__prize" style={{ textDecoration: "line-through" }}>
+              ${pro.old_price?.parsedValue}
+            </li>
+            <li>${pro.price?.parsedValue}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  ));
+};
+
   return (
     <>
     <Header/>

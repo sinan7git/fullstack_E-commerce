@@ -1,4 +1,4 @@
-import axios from 'axios';
+import useAxios from '../useAxios';
 import React, { useEffect, useState } from 'react'
 import Header from '../includes/Header';
 import  { BASE_URL } from '../includes/Api'
@@ -7,13 +7,18 @@ import { Link } from 'react-router-dom';
 function ActiveWear() {
 
     const [dress, setDress] = useState([]);
-    useEffect(() =>{
-        axios.get(`${BASE_URL}?q=5`).then((response) =>{
-            setDress(response.data.data)
-        }).catch((err) =>{
-            console.log(err)
+    const axiosInstance = useAxios();
+
+    useEffect(() => {
+      axiosInstance.get(`${BASE_URL}?q=5`)
+        .then((response) => {
+          setDress(response.data.data);
         })
-    }, [])
+        .catch((err) => {
+          console.log(err);
+        });
+    }, [axiosInstance]);
+
 
     const renderItem = () =>{
         if (!Array.isArray(dress)) {

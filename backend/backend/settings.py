@@ -76,7 +76,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'ecommerce',
         'USER': 'postgres',
-        'PASSWORD': 'sinan7',
+        'PASSWORD': 'root',
         'HOST': 'localhost',  # or the IP address of your PostgreSQL server
         'PORT': '5432',       # Default PostgreSQL port
     }

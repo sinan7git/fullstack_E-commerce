@@ -3,16 +3,22 @@ import React, { useEffect, useState } from 'react'
 import  { BASE_URL } from '../includes/Api'
 import Header from '../includes/Header';
 import { Link } from 'react-router-dom';
+import useAxios from "../useAxios";
 function Watches() {
 
     const [dress, setDress] = useState([]);
-    useEffect(() =>{
-      axios.get(`${BASE_URL}?q=21`).then((response) =>{
-            setDress(response.data.data)
-        }).catch((err) =>{
-            console.log(err)
-        })
-    }, [])
+    const axiosInstance = useAxios();
+
+useEffect(() => {
+  axiosInstance.get(`${BASE_URL}?q=21`)
+    .then((response) => {
+      setDress(response.data.data);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}, [axiosInstance]);
+
 
     const renderItem = () =>{
         if (!Array.isArray(dress)) {
